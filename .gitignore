@@ -1,0 +1,5 @@
+*.anim
+*.res
+build
+debug
+
