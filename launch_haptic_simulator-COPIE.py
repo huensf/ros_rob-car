@@ -82,7 +82,7 @@ def start_task():
          print(" 3. Full speed turn (Advised speed if constant : 150 km/h)\n")
          print(" 4. Traffic circle  (Advised speed if constant : 40 km/h)\n")
          print(" 5. Obstacle avoid (Advised speed if constant : 75 km/h)\n")
-         print(" 6. Simple turn (Advised speed : 50 km/h)\n")
+         print(" 6. Simple turn (Advised speed if constant : 50 km/h)\n")
          print 'Enter the number of the simulation you want :',
      
          valid_choice_2 = False
