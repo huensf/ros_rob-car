@@ -95,9 +95,9 @@ void user_dirdyn_loop(MbsData *mbs_data, MbsDirdyn *mbs_dd)
 	mbs_comp_S_sensor(PtrSensor, mbs_data, id_c);
 
 	// save the vertical acceleration
-	set_output(PtrSensor->P[1], "X_position_sensor_c");
-	set_output(PtrSensor->P[2], "Y_position_sensor_c");
-	set_output(PtrSensor->P[3], "Z_position_sensor_c");
+	//set_output(PtrSensor->P[1], "X_position_sensor_c");
+	//set_output(PtrSensor->P[2], "Y_position_sensor_c");
+	//set_output(PtrSensor->P[3], "Z_position_sensor_c");
 
 }
 

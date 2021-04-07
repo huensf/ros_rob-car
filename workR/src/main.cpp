@@ -270,6 +270,10 @@ void *robotran_thread_2(void *arg_data_2) //thread for the Robotran simulation
 
       printf("Point ancrage pour chasse : %f \n", mbs_data->dpt[1][Fusee_av_d_1_to_roue_id]);
     }
+    else if(simulation_choice == 6)
+    {
+      mbs_data = mbs_load(PROJECT_SOURCE_DIR"/../dataR/Car_simple-turn.mbs", BUILD_PATH);
+    }
 
     printf("*.mbs file loaded!\n");
 
@@ -322,6 +326,7 @@ void *robotran_thread_2(void *arg_data_2) //thread for the Robotran simulation
     mbs_equil->options->devjac = 1e-2; //1e-2
 	//mbs_equil->options->equitol = 7e-4;
     mbs_equil->options->verbose = 0;
+    mbs_equil->options->save2file = 0;
     mbs_equil->options->resfilename = (char*)"static_1";
 
     mbs_data->q[R2_chassis_id] = 0.0;
@@ -370,6 +375,7 @@ void *robotran_thread_2(void *arg_data_2) //thread for the Robotran simulation
 //	mbs_equil->options->itermax = 100;
     mbs_equil->options->verbose = 0;
     mbs_equil->options->mode = 2;
+    mbs_equil->options->save2file = 0;
     mbs_equil->options->resfilename = (char*)"sl";
 
     // set pedals_mode
@@ -419,27 +425,31 @@ void *robotran_thread_2(void *arg_data_2) //thread for the Robotran simulation
   // dirdyn options (see documentations for additional options)
   mbs_dirdyn->options->dt0 = 0.82 * 1e-3; 
 
-  mbs_dirdyn->options->tf  = 10.0;
+  mbs_dirdyn->options->tf = 10.0;
   if(simulation_choice == 1)
   {
-    mbs_dirdyn->options->tf  = 90;
+    mbs_dirdyn->options->tf = 90;
   }
   else if(simulation_choice == 2)
   {
-    mbs_dirdyn->options->tf  = 160.0;
+    mbs_dirdyn->options->tf = 160.0;
   }
   else if(simulation_choice == 3)
   {
-    mbs_dirdyn->options->tf  = 20.0;
+    mbs_dirdyn->options->tf = 20.0;
   }
   else if(simulation_choice == 4)
   {
-    mbs_dirdyn->options->tf  = 30.0;
+    mbs_dirdyn->options->tf = 30.0;
   }
   else if(simulation_choice == 5)
   {
-    mbs_dirdyn->options->tf  = 15.0;
+    mbs_dirdyn->options->tf = 15.0;
   } 
+  else if(simulation_choice == 6)
+  {
+  	mbs_dirdyn->options->tf = 10;
+  }
 
   mbs_dirdyn->options->save2file = 1;
   mbs_dirdyn->options->realtime = 1;
