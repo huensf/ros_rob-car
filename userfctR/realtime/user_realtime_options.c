@@ -89,7 +89,7 @@ void user_realtime_options(MbsData* mbs_data, Realtime_option *options)
     options->y_min_init =  -30.0;
     options->y_max_init = 30.0;
     options->flag_visu = 1;
-    options->flag_plot = 1;
+    options->flag_plot = 0;
     options->start_viewpoint = mbs_data->user_model->command_key.torque;
 }
 

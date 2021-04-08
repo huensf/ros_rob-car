@@ -83,6 +83,7 @@ def start_task():
          print(" 4. Traffic circle  (Advised speed if constant : 40 km/h)\n")
          print(" 5. Obstacle avoid (Advised speed if constant : 75 km/h)\n")
          print(" 6. Simple turn (Advised speed if constant : 50 km/h)\n")
+         print(" 7. Straight lines\n")
          print 'Enter the number of the simulation you want :',
      
          valid_choice_2 = False
@@ -91,7 +92,7 @@ def start_task():
 
           simulation_choice = raw_input().lower()
 
-          if simulation_choice == '1' or simulation_choice == '2' or simulation_choice == '3' or simulation_choice == '4' or simulation_choice == '5' or simulation_choice == '6':
+          if simulation_choice == '1' or simulation_choice == '2' or simulation_choice == '3' or simulation_choice == '4' or simulation_choice == '5' or simulation_choice == '6' or simulation_choice == '7':
 
             rosparam.set_param('simulation_choice', simulation_choice)
 

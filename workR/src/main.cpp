@@ -82,25 +82,17 @@ void chatterCallback_pos_vit(const ros_rob::Pos_vit_msg& msg) //callback functio
 {
     mbs_data->q[R1_steerwheel_id] = msg.pos_value;
     if(mbs_data->q[R1_steerwheel_id] > 9)
-    {
         mbs_data->q[R1_steerwheel_id] = 9;
-    }
     else if(mbs_data->q[R1_steerwheel_id] < -9)
-    {
         mbs_data->q[R1_steerwheel_id] = -9;
-    }
     mbs_data->qd[R1_steerwheel_id] = msg.vit_value; 
 }
 
 void chatterCallback_pedals(const ros_rob::Pedals_msg& msg) //callback function for the topic chatter_pedals, update the speed of the vehicle
 {
-  double speed = 3.6 * sqrt(pow(mbs_data->qd[T1_chassis_id],2)+pow(mbs_data->qd[T2_chassis_id],2));
-  double accel = sqrt(pow(mbs_data->qdd[T1_chassis_id],2)+pow(mbs_data->qdd[T2_chassis_id],2));
-  //printf("speed = %f\taccel = %f\n", speed, accel);
-
   mbs_data->user_model->pedals.ped1 = msg.pedal1_value;
   mbs_data->user_model->pedals.ped2 = msg.pedal2_value;
-  //printf("ped1(acc): %f\tped2(brake): %f\n", ped1, ped2); 
+  printf("ped1(acc): %f\tped2(brake): %f\n", msg.pedal1_value, msg.pedal2_value); 
 }
 
 void *ros_posvit_thread_3(void *arg_data_3) //thread listener (for the position and velocity of the steeerwheel)
@@ -145,7 +137,6 @@ void *ros_torque_thread_1(void *arg_data_1) //thread publisher (for the torque o
 
     while (robotran_finish != 1)
     {
-        // torque_can_msg.data.clear();
         pthread_mutex_lock(&mutex); 
         pthread_cond_wait(&condition, &mutex);
 		     
@@ -273,6 +264,10 @@ void *robotran_thread_2(void *arg_data_2) //thread for the Robotran simulation
     else if(simulation_choice == 6)
     {
       mbs_data = mbs_load(PROJECT_SOURCE_DIR"/../dataR/Car_simple-turn.mbs", BUILD_PATH);
+    }
+    else if(simulation_choice == 7)
+    {
+      mbs_data = mbs_load(PROJECT_SOURCE_DIR"/../dataR/Car_2lines.mbs", BUILD_PATH);
     }
 
     printf("*.mbs file loaded!\n");
@@ -427,29 +422,19 @@ void *robotran_thread_2(void *arg_data_2) //thread for the Robotran simulation
 
   mbs_dirdyn->options->tf = 10.0;
   if(simulation_choice == 1)
-  {
-    mbs_dirdyn->options->tf = 90;
-  }
+    mbs_dirdyn->options->tf = 90.0;
   else if(simulation_choice == 2)
-  {
     mbs_dirdyn->options->tf = 160.0;
-  }
   else if(simulation_choice == 3)
-  {
     mbs_dirdyn->options->tf = 20.0;
-  }
   else if(simulation_choice == 4)
-  {
     mbs_dirdyn->options->tf = 30.0;
-  }
   else if(simulation_choice == 5)
-  {
     mbs_dirdyn->options->tf = 15.0;
-  } 
   else if(simulation_choice == 6)
-  {
-  	mbs_dirdyn->options->tf = 15;
-  }
+  	mbs_dirdyn->options->tf = 15.0;
+  else if(simulation_choice == 7)
+  	mbs_dirdyn->options->tf = 120.0;
 
   mbs_dirdyn->options->save2file = 1;
   mbs_dirdyn->options->realtime = 1;
