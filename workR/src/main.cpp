@@ -56,7 +56,6 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 //global variable used in the three threads
 MbsData *mbs_data;
-int robotran_finish = 0;
 
 void give_torque_access();
 
@@ -90,9 +89,19 @@ void chatterCallback_pos_vit(const ros_rob::Pos_vit_msg& msg) //callback functio
 
 void chatterCallback_pedals(const ros_rob::Pedals_msg& msg) //callback function for the topic chatter_pedals, update the speed of the vehicle
 {
-  mbs_data->user_model->pedals.ped1 = msg.pedal1_value;
-  mbs_data->user_model->pedals.ped2 = msg.pedal2_value;
-  printf("ped1(acc): %f\tped2(brake): %f\n", msg.pedal1_value, msg.pedal2_value); 
+	mbs_data->user_model->pedals.ped1 = msg.pedal1_value;
+	mbs_data->user_model->pedals.ped2 = msg.pedal2_value;
+	//printf("ped1(acc): %f\tped2(brake): %f\n", msg.pedal1_value, msg.pedal2_value); 
+
+	/* A SUPPRIMER APRES 
+    double ped1 = mbs_data->user_model->pedals.ped1;
+    double ped2 = mbs_data->user_model->pedals.ped2;
+    double ped1_rest = 7500, ped1_max = 22000;
+    double ped2_rest = 500, ped2_max = 14000;
+    if(ped1 < ped1_rest && ped2 >= ped2_rest)
+    	printf("braking !\n");
+    else if(ped1 >= ped1_rest && ped2 < ped2_rest)
+    	printf("accelerating !\n");*/
 }
 
 void *ros_posvit_thread_3(void *arg_data_3) //thread listener (for the position and velocity of the steeerwheel)
@@ -105,6 +114,8 @@ void *ros_posvit_thread_3(void *arg_data_3) //thread listener (for the position 
 	ros::Subscriber sub_pos = pos_vit_lis.subscribe("chatter_pos_vit", 1, chatterCallback_pos_vit); 
 	ros::Subscriber sub_ped = pedals_lis.subscribe("chatter_pedals", 1, chatterCallback_pedals);   
 
+	int robotran_finish = 0;
+	ros::param::get("robotran_finish", robotran_finish);
     while (robotran_finish != 1)
     {
      	pthread_mutex_lock(&mutex); 
@@ -113,6 +124,7 @@ void *ros_posvit_thread_3(void *arg_data_3) //thread listener (for the position 
         ros::spinOnce(); //call chatterCallback once
 
         pthread_mutex_unlock (&mutex);
+        ros::param::get("robotran_finish", robotran_finish);
     }
 
     printf("ROS Pos & Vit + Pedals finish ! \n");
@@ -135,6 +147,8 @@ void *ros_torque_thread_1(void *arg_data_1) //thread publisher (for the torque o
       
     int count = 0;
 
+    int robotran_finish = 0;
+	ros::param::get("robotran_finish", robotran_finish);
     while (robotran_finish != 1)
     {
         pthread_mutex_lock(&mutex); 
@@ -164,6 +178,7 @@ void *ros_torque_thread_1(void *arg_data_1) //thread publisher (for the torque o
 
         //send_torque_pdo(m,torque_can_msg,-270,chatter_pub);
         chatter_pub.publish(torque);
+        ros::param::get("robotran_finish", robotran_finish);
     }
      
     // to stop the steerwheel after the simu 
@@ -434,14 +449,14 @@ void *robotran_thread_2(void *arg_data_2) //thread for the Robotran simulation
   else if(simulation_choice == 6)
   	mbs_dirdyn->options->tf = 15.0;
   else if(simulation_choice == 7)
-  	mbs_dirdyn->options->tf = 120.0;
+  	mbs_dirdyn->options->tf = 5.0;
 
   mbs_dirdyn->options->save2file = 1;
   mbs_dirdyn->options->realtime = 1;
 
   mbs_dirdyn->options->respath = PROJECT_SOURCE_DIR"/../resultsR";
  
-  robotran_finish = 0;
+  ros::param::set("robotran_finish", 0);
 
   // in order to wait that the servo-drive is set for the haptic simulator
   /*int haptic_ready = 0;
@@ -469,7 +484,7 @@ void *robotran_thread_2(void *arg_data_2) //thread for the Robotran simulation
   free(thread_struct);
 
   pthread_mutex_lock (&mutex); 
-  robotran_finish = 1; //advertise the two other threads that the simulation is finish
+  ros::param::set("robotran_finish", 1); //advertise the two other threads that the simulation is finish
   pthread_cond_signal(&condition); 
   pthread_cond_signal(&condition_2); 
   pthread_mutex_unlock (&mutex);

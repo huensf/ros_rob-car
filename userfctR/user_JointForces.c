@@ -7,7 +7,7 @@
 // Last update : 01/10/2008
 //---------------------------
 
-#include "math.h" 
+#include <math.h> 
 
 #include "mbs_data.h"
 #include "user_model.h"
@@ -55,14 +55,17 @@ double* user_JointForces(MbsData *mbs_data, double tsim)
         if(pedals_mode == 1) {
         	double speed = 3.6 * sqrt(pow(mbs_data->qd[T1_chassis_id],2)+pow(mbs_data->qd[T2_chassis_id],2));
             double accel = sqrt(pow(mbs_data->qdd[T1_chassis_id],2)+pow(mbs_data->qdd[T2_chassis_id],2));
+            printf("speed = %f\taccel = %f\n", speed, accel);
 
             double ped1 = mbs_data->user_model->pedals.ped1;
             double ped2 = mbs_data->user_model->pedals.ped2;
-            double ped1_rest = 7000, ped1_max = 22000;
-            double ped2_rest = 1000, ped2_max = 14000;
-            // on prend max. 5m/s², traction 100%
-            // --> simus essai / erreur pour trouver le couple correspondant
-            double accel_ft_max = 1800;
+            double ped1_rest = 7500, ped1_max = 22000;
+            double ped2_rest = 500, ped2_max = 14000;
+
+            // on prend max. 5m/s² --> simus essais/erreurs pour trouver le couple correspondant
+            // ratio traction / propulsion : 60% / 40%
+            double accel_ft_max = 2000;
+            double accel_rr_max = 1000;
             // cf. TFE Theo
             // ratio traction / propulsion : 65% / 35%
             double brake_ft_max = -1235;
@@ -87,16 +90,16 @@ double* user_JointForces(MbsData *mbs_data, double tsim)
                 	mbs_data->Qq[R2_wheel_ft_rt_id] = brake_ft_max / (ped2_max-ped2_rest) * (ped2-ped2_rest);
             	}
             	else if(brake_mode == 3) {
-            		mbs_data->Qq[R2_wheel_rr_lt_id] = - 0.826 * exp(0.0005 * ped2);
-             	    mbs_data->Qq[R2_wheel_rr_rt_id] = - 0.826 * exp(0.0005 * ped2);
-               		mbs_data->Qq[R2_wheel_ft_lt_id] = - 0.811 * exp(0.0005 * ped2);
-                	mbs_data->Qq[R2_wheel_ft_rt_id] = - 0.811 * exp(0.0005 * ped2);
+            		mbs_data->Qq[R2_wheel_rr_lt_id] = - 26.704 * exp(0.0002 * ped2) + 30;
+             	    mbs_data->Qq[R2_wheel_rr_rt_id] = - 26.704 * exp(0.0002 * ped2) + 30;
+               		mbs_data->Qq[R2_wheel_ft_lt_id] = - 26.118 * exp(0.0003 * ped2) + 30;
+                	mbs_data->Qq[R2_wheel_ft_rt_id] = - 26.118 * exp(0.0003 * ped2) + 30;
             	}
             	else if(brake_mode == 4) {
-            		mbs_data->Qq[R2_wheel_rr_lt_id] = - 187 * log(ped2) + 1120.7;
-             	    mbs_data->Qq[R2_wheel_rr_rt_id] = - 187 * log(ped2) + 1120.7;
-               		mbs_data->Qq[R2_wheel_ft_lt_id] = - 347.4 * log(ped2) + 2081.2;
-                	mbs_data->Qq[R2_wheel_ft_rt_id] = - 347.4 * log(ped2) + 2081.2;
+            		mbs_data->Qq[R2_wheel_rr_lt_id] = - 199.57 * log(ped2) + 1240.2;
+             	    mbs_data->Qq[R2_wheel_rr_rt_id] = - 199.57 * log(ped2) + 1240.2;
+               		mbs_data->Qq[R2_wheel_ft_lt_id] = - 370.63 * log(ped2) + 2303.3;
+                	mbs_data->Qq[R2_wheel_ft_rt_id] = - 370.63 * log(ped2) + 2303.3;
             	}
                 
             }
@@ -123,6 +126,10 @@ double* user_JointForces(MbsData *mbs_data, double tsim)
             }
             else {
                 // Aucune pedale enfoncee (ou les deux) --> on ne fait rien
+                /*mbs_data->Qq[R2_wheel_rr_lt_id] = 0;
+         	    mbs_data->Qq[R2_wheel_rr_rt_id] = 0;
+           		mbs_data->Qq[R2_wheel_ft_lt_id] = 0;
+            	mbs_data->Qq[R2_wheel_ft_rt_id] = 0;*/
             }
         }
 
