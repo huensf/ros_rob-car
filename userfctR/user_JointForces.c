@@ -32,24 +32,7 @@ double* user_JointForces(MbsData *mbs_data, double tsim)
 
     if(mbs_data->process == 2)
     {
-    	/********/
-    	/* TODO */
-    	/********/
-
-    	// fix le trigger
-    	// 		'calibration' ? (valeur init pas cst)
-    	//		montage ressort : pas bon rappel, trop aléatoire
-    	//
-    	// valeurs de couple
-    	//		freinage : normalement ok pour un trigger à 400, suffit de recalculer avec Excel
-    	// 		acceleration : calculer le bon couple à mettre aux roues pour avoir du 4-5-6 m/s²
-    	//					   puis calcul Excel comme pour frein
-    	//
-    	// tester les différentes lois
-
-    	/********/
-
-        int pedals_mode = mbs_data->user_model->pedals.mode;
+    	int pedals_mode = mbs_data->user_model->pedals.mode;
 
         // PEDALS ON : Acceleration and braking
         if(pedals_mode == 1) {
@@ -62,17 +45,22 @@ double* user_JointForces(MbsData *mbs_data, double tsim)
             double ped1_rest = 7500, ped1_max = 22000;
             double ped2_rest = 500, ped2_max = 14000;
 
-            // on prend max. 5m/s² --> simus essais/erreurs pour trouver le couple correspondant
+            // save2file
+            set_output(ped1,"pedal_accel_pos");
+            set_output(ped2,"pedal_brake_pos");
+
+            // on prend max. 5m/s² --> simus essais/erreurs 
+            // pour trouver le couple correspondant. 1200/800 --> 5.65 m/s²
             // ratio traction / propulsion : 60% / 40%
-            double accel_ft_max = 2000;
-            double accel_rr_max = 1000;
+            double accel_ft_max = 1200;
+            double accel_rr_max = 800;
             // cf. TFE Theo
             // ratio traction / propulsion : 65% / 35%
             double brake_ft_max = -1235;
             double brake_rr_max = -665;        
 
-            int accel_mode = 1; //1: cst, 2: lin, 3: exp, 4: log
-            int brake_mode = 1; //1: cst, 2: lin, 3: exp, 4: log
+            int accel_mode = 4; //1: cst, 2: lin, 3: exp, 4: log
+            int brake_mode = 4; //1: cst, 2: lin, 3: exp, 4: log
            
             // Pedale de frein enfoncee & vitesse > 10 km/h
             if(ped1 < ped1_rest && ped2 >= ped2_rest && speed > 10) {
@@ -107,29 +95,33 @@ double* user_JointForces(MbsData *mbs_data, double tsim)
             else if(ped1 >= ped1_rest && ped2 < ped2_rest && speed < 120) {
                 
                 if(accel_mode == 1) {
-               		mbs_data->Qq[R2_wheel_ft_lt_id] = accel_ft_max;
+               		mbs_data->Qq[R2_wheel_rr_lt_id] = accel_rr_max;
+                	mbs_data->Qq[R2_wheel_rr_rt_id] = accel_rr_max;
+                	mbs_data->Qq[R2_wheel_ft_lt_id] = accel_ft_max;
                 	mbs_data->Qq[R2_wheel_ft_rt_id] = accel_ft_max;
                 }
                 else if(accel_mode == 2) {
+               		mbs_data->Qq[R2_wheel_rr_lt_id] = accel_rr_max / (ped1_max-ped1_rest) * (ped1-ped1_rest);
+                	mbs_data->Qq[R2_wheel_rr_rt_id] = accel_rr_max / (ped1_max-ped1_rest) * (ped1-ped1_rest);
                		mbs_data->Qq[R2_wheel_ft_lt_id] = accel_ft_max / (ped1_max-ped1_rest) * (ped1-ped1_rest);
                 	mbs_data->Qq[R2_wheel_ft_rt_id] = accel_ft_max / (ped1_max-ped1_rest) * (ped1-ped1_rest);
                 }
                 else if(accel_mode == 3) {
-               		mbs_data->Qq[R2_wheel_ft_lt_id] = 0;
-                	mbs_data->Qq[R2_wheel_ft_rt_id] = 0;	
+               		mbs_data->Qq[R2_wheel_rr_lt_id] = 11.917 * exp(0.0002 * ped1) - 50;
+                	mbs_data->Qq[R2_wheel_rr_rt_id] = 11.917 * exp(0.0002 * ped1) - 50;
+               		mbs_data->Qq[R2_wheel_ft_lt_id] = 9.4601 * exp(0.0002 * ped1) - 50;
+                	mbs_data->Qq[R2_wheel_ft_rt_id] = 9.4601 * exp(0.0002 * ped1) - 50;	
                 }
                 else if(accel_mode == 4) {
-               		mbs_data->Qq[R2_wheel_ft_lt_id] = 0;
-                	mbs_data->Qq[R2_wheel_ft_rt_id] = 0;
+                	mbs_data->Qq[R2_wheel_rr_lt_id] = 235.21 * log(ped1-7000) - 1461.7;
+                	mbs_data->Qq[R2_wheel_rr_rt_id] = 235.21 * log(ped1-7000) - 1461.7;
+               		mbs_data->Qq[R2_wheel_ft_lt_id] = 352.82 * log(ped1-7000) - 2192.6;
+                	mbs_data->Qq[R2_wheel_ft_rt_id] = 352.82 * log(ped1-7000) - 2192.6;
                 }
              
             }
             else {
                 // Aucune pedale enfoncee (ou les deux) --> on ne fait rien
-                /*mbs_data->Qq[R2_wheel_rr_lt_id] = 0;
-         	    mbs_data->Qq[R2_wheel_rr_rt_id] = 0;
-           		mbs_data->Qq[R2_wheel_ft_lt_id] = 0;
-            	mbs_data->Qq[R2_wheel_ft_rt_id] = 0;*/
             }
         }
 

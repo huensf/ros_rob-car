@@ -449,7 +449,7 @@ void *robotran_thread_2(void *arg_data_2) //thread for the Robotran simulation
   else if(simulation_choice == 6)
   	mbs_dirdyn->options->tf = 15.0;
   else if(simulation_choice == 7)
-  	mbs_dirdyn->options->tf = 5.0;
+  	mbs_dirdyn->options->tf = 10.0;
 
   mbs_dirdyn->options->save2file = 1;
   mbs_dirdyn->options->realtime = 1;
